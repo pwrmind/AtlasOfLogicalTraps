@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Атлас Логических Ловушек - Распознавание когнитивных искажений</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuex@3.6.2/dist/vuex.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --primary-light: #34495e;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --success: #27ae60;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --text: #34495e;
+            --gray: #bdc3c7;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a3a, #2c3e50);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        #app {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        .logo i {
+            font-size: 2.8rem;
+            margin-right: 15px;
+            color: var(--secondary);
+        }
+        
+        .logo h1 {
+            font-size: 2.3rem;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 20px;
+            color: var(--light);
+        }
+        
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            box-shadow: var(--shadow);
+            padding-left: 50px;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+            font-size: 1.2rem;
+        }
+        
+        .categories {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin: 25px 0;
+        }
+        
+        .category-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid var(--secondary);
+            border-radius: 50px;
+            padding: 8px 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+        
+        .category-btn:hover, .category-btn.active {
+            background: var(--secondary);
+        }
+        
+        .traps-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .trap-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            border-top: 5px solid var(--secondary);
+        }
+        
+        .trap-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .trap-header {
+            padding: 25px 25px 15px;
+            background: linear-gradient(to right, var(--primary-light), var(--primary));
+            color: white;
+        }
+        
+        .trap-title {
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        
+        .trap-category {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+        }
+        
+        .trap-content {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .trap-description {
+            margin-bottom: 20px;
+            color: var(--text);
+            line-height: 1.7;
+            flex-grow: 1;
+        }
+        
+        .trap-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-primary {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--secondary);
+            color: var(--secondary);
+        }
+        
+        .btn-outline:hover {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .btn-accent {
+            background: var(--accent);
+            color: white;
+        }
+        
+        .btn-accent:hover {
+            background: #c0392b;
+        }
+        
+        .trap-details {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            margin-bottom: 40px;
+        }
+        
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--gray);
+        }
+        
+        .detail-title {
+            color: var(--primary);
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .detail-content {
+            margin-bottom: 30px;
+        }
+        
+        .detail-section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            color: var(--secondary);
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--gray);
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title i {
+            margin-right: 10px;
+        }
+        
+        .checklist {
+            list-style-type: none;
+            padding-left: 10px;
+        }
+        
+        .checklist li {
+            margin-bottom: 12px;
+            padding-left: 30px;
+            position: relative;
+            line-height: 1.6;
+        }
+        
+        .checklist li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 22px;
+            height: 22px;
+            background: var(--success);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+        
+        .advice-list {
+            list-style-type: none;
+            padding-left: 10px;
+        }
+        
+        .advice-list li {
+            margin-bottom: 15px;
+            padding-left: 30px;
+            position: relative;
+            line-height: 1.7;
+        }
+        
+        .advice-list li:before {
+            content: "➤";
+            position: absolute;
+            left: 0;
+            top: 2px;
+            color: var(--secondary);
+            font-weight: bold;
+        }
+        
+        .example-box {
+            background: #f9f9f9;
+            border-left: 4px solid var(--secondary);
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+        
+        .example-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        
+        .back-btn {
+            margin-top: 20px;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .back-btn i {
+            margin-right: 8px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--gray);
+            margin-bottom: 20px;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+        .empty-state p {
+            color: var(--text);
+            max-width: 600px;
+            margin: 0 auto 25px;
+            line-height: 1.7;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px 20px 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.95rem;
+            margin-top: 30px;
+        }
+        
+        @media (max-width: 900px) {
+            .traps-container {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .traps-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .logo h1 {
+                font-size: 1.9rem;
+            }
+            
+            .trap-details {
+                padding: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .logo h1 {
+                font-size: 1.6rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .search-input {
+                padding: 12px 20px 12px 45px;
+                font-size: 1rem;
+            }
+            
+            .trap-actions {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-brain"></i>
+                    <h1>Атлас Логических Ловушек</h1>
+                </div>
+                <p class="subtitle">Справочник по когнитивным искажениям с чек-листами для распознавания и стратегиями преодоления</p>
+                
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input 
+                        type="text" 
+                        class="search-input" 
+                        placeholder="Поиск по ловушкам..."
+                        v-model="searchQuery"
+                    >
+                </div>
+                
+                <div class="categories">
+                    <button 
+                        v-for="category in categories" 
+                        :key="category"
+                        class="category-btn"
+                        :class="{ active: selectedCategory === category }"
+                        @click="selectCategory(category)"
+                    >
+                        {{ category }}
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <main>
+            <!-- Список ловушек -->
+            <div v-if="filteredTraps.length > 0">
+                <div class="traps-container">
+                    <div v-for="trap in filteredTraps" :key="trap.id" class="trap-card">
+                        <div class="trap-header">
+                            <h3 class="trap-title">{{ trap.title }}</h3>
+                            <div class="trap-category">{{ trap.category }}</div>
+                        </div>
+                        <div class="trap-content">
+                            <p class="trap-description">{{ trap.shortDescription }}</p>
+                            <div class="trap-actions">
+                                <button class="btn btn-primary" @click="showTrapDetails(trap)">
+                                    <i class="fas fa-info-circle"></i> Подробнее
+                                </button>
+                                <button class="btn btn-outline" @click="showChecklist(trap)">
+                                    <i class="fas fa-clipboard-list"></i> Чек-лист
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Состояние при отсутствии результатов -->
+            <div v-else class="empty-state">
+                <i class="fas fa-search"></i>
+                <h3>Ловушки не найдены</h3>
+                <p>Попробуйте изменить критерии поиска или выбрать другую категорию</p>
+                <button class="btn btn-primary" @click="resetFilters">
+                    <i class="fas fa-sync"></i> Сбросить фильтры
+                </button>
+            </div>
+            
+            <!-- Детали ловушки -->
+            <div v-if="selectedTrap" class="trap-details">
+                <div class="detail-header">
+                    <h2 class="detail-title">{{ selectedTrap.title }}</h2>
+                    <button class="btn btn-accent" @click="closeTrapDetails">
+                        <i class="fas fa-times"></i> Закрыть
+                    </button>
+                </div>
+                
+                <div class="detail-content">
+                    <div class="detail-section">
+                        <h3 class="section-title"><i class="fas fa-file-alt"></i> Описание</h3>
+                        <p>{{ selectedTrap.description }}</p>
+                        
+                        <div class="example-box" v-if="selectedTrap.example">
+                            <div class="example-title">Пример:</div>
+                            <p>{{ selectedTrap.example }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <h3 class="section-title"><i class="fas fa-clipboard-check"></i> Чек-лист для распознавания</h3>
+                        <ul class="checklist">
+                            <li v-for="(item, index) in selectedTrap.checklist" :key="index">{{ item }}</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <h3 class="section-title"><i class="fas fa-lightbulb"></i> Как выбраться из ловушки</h3>
+                        <ul class="advice-list">
+                            <li v-for="(advice, index) in selectedTrap.advice" :key="index">{{ advice }}</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <button class="btn btn-outline back-btn" @click="closeTrapDetails">
+                    <i class="fas fa-arrow-left"></i> Вернуться к списку ловушек
+                </button>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Атлас Логических Ловушек &copy; 2023 - Инструмент для развития критического мышления</p>
+            <p>Распознавайте когнитивные искажения и принимайте более осознанные решения</p>
+        </footer>
+    </div>
+
+    <script>
+        // Хранилище Vuex для управления состоянием
+        const store = new Vuex.Store({
+            state: {
+                // Категории когнитивных искажений
+                categories: [
+                    "Все ловушки",
+                    "Ошибки мышления",
+                    "Эмоциональные искажения",
+                    "Социальные искажения",
+                    "Память и внимание"
+                ],
+                
+                // Список когнитивных искажений
+                cognitiveTraps: [
+                    {
+                        id: 1,
+                        title: "Подтверждение своей точки зрения",
+                        category: "Ошибки мышления",
+                        shortDescription: "Склонность искать, интерпретировать и запоминать информацию, подтверждающую собственные убеждения.",
+                        description: "Это когнитивное искажение заставляет нас отдавать предпочтение информации, которая согласуется с нашими существующими убеждениями, и игнорировать или недооценивать информацию, которая им противоречит. Это создает «пузырь» подтверждения, ограничивающий наше восприятие реальности.",
+                        example: "Человек, верящий, что электромагнитные поля опасны, будет замечать и запоминать все статьи об их вреде, игнорируя научные исследования, доказывающие их безопасность.",
+                        checklist: [
+                            "Я часто ищу информацию, подтверждающую мою точку зрения?",
+                            "Я склонен игнорировать факты, противоречащие моим убеждениям?",
+                            "Мне трудно принять аргументы противоположной стороны?",
+                            "Я чувствую дискомфорт, когда сталкиваюсь с информацией, противоречащей моим взглядам?",
+                            "Мои источники информации преимущественно поддерживают мою позицию?"
+                        ],
+                        advice: [
+                            "Сознательно ищите информацию, противоречащую вашим убеждениям",
+                            "Анализируйте противоположные точки зрения с объективностью",
+                            "Задавайте себе вопрос: «Что могло бы изменить моё мнение?»",
+                            "Обсуждайте спорные темы с людьми, имеющими противоположные взгляды",
+                            "Развивайте привычку проверять источники информации на объективность"
+                        ]
+                    },
+                    {
+                        id: 2,
+                        title: "Каскад доступной информации",
+                        category: "Память и внимание",
+                        shortDescription: "Склонность переоценивать важность информации, которая легко приходит на ум.",
+                        description: "Это искажение заставляет нас считать, что события, которые мы легко можем вспомнить, происходят чаще, чем те, которые вспоминаются с трудом. Наша оценка вероятности событий искажается под влиянием ярких примеров, недавних событий или эмоционально заряженных воспоминаний.",
+                        example: "После просмотра новостей о авиакатастрофе человек начинает бояться летать, хотя статистически самолеты - самый безопасный вид транспорта.",
+                        checklist: [
+                            "Я часто сужу о вероятности событий на основе недавних примеров?",
+                            "Эмоционально заряженные события влияют на мои решения?",
+                            "Я переоцениваю риски ярких, но редких событий?",
+                            "Мне трудно оценить статистическую вероятность событий?",
+                            "Мои опасения основаны на легко вспоминаемых случаях?"
+                        ],
+                        advice: [
+                            "Принимайте решения на основе статистики, а не отдельных случаев",
+                            "Спрашивайте себя: «Насколько редко это событие на самом деле?»",
+                            "Ищите объективные данные, прежде чем делать выводы",
+                            "Разделяйте эмоциональную реакцию и рациональную оценку",
+                            "Консультируйтесь с экспертами для получения точной информации"
+                        ]
+                    },
+                    {
+                        id: 3,
+                        title: "Эффект Даннинга-Крюгера",
+                        category: "Ошибки мышления",
+                        shortDescription: "Люди с низкой квалификацией склонны переоценивать свои способности, а эксперты - недооценивать.",
+                        description: "Это когнитивное искажение проявляется в том, что люди, имеющие низкий уровень квалификации, делают ошибочные выводы и принимают неудачные решения, но неспособны осознавать свои ошибки из-за низкого уровня компетентности. В то же время высококвалифицированные люди, наоборот, склонны занижать свои способности.",
+                        example: "Новичок в инвестициях уверен, что легко обыграет рынок, в то время как опытный инвестор сомневается в своей стратегии, несмотря на многолетний успешный опыт.",
+                        checklist: [
+                            "Я часто чувствую себя экспертом в новых для меня областях?",
+                            "Мне трудно признать пробелы в своих знаниях?",
+                            "Я недооцениваю сложность задач?",
+                            "Я склонен отказываться от обратной связи о своих ошибках?",
+                            "Эксперты в моей области кажутся мне излишне осторожными?"
+                        ],
+                        advice: [
+                            "Регулярно оценивайте уровень своей компетентности в разных областях",
+                            "Активно ищите обратную связь от экспертов",
+                            "Признавайте пределы своих знаний",
+                            "Практикуйте интеллектуальное смирение",
+                            "Учитесь на ошибках, а не игнорируйте их"
+                        ]
+                    },
+                    {
+                        id: 4,
+                        title: "Ошибка игрока",
+                        category: "Ошибки мышления",
+                        shortDescription: "Вера в то, что прошлые случайные события влияют на будущие вероятности.",
+                        description: "Это искажение заставляет нас считать, что если случайное событие произошло чаще обычного, то в будущем оно будет происходить реже (или наоборот). На самом деле, в случайных процессах каждое событие независимо, и предыдущие результаты не влияют на будущие.",
+                        example: "После серии проигрышей в рулетке человек думает, что «удача должна повернуться», и увеличивает ставки, хотя вероятность выигрыша не изменилась.",
+                        checklist: [
+                            "Я верю, что после полосы неудач обязательно будет успех?",
+                            "Я думаю, что случайные события «уравновешиваются» со временем?",
+                            "Я ищу закономерности в случайных событиях?",
+                            "Принимаю ли я решения, основанные на «чувстве» вероятности?",
+                            "Я верю в «счастливые» и «несчастливые» полосы?"
+                        ],
+                        advice: [
+                            "Помните, что в случайных процессах каждое событие независимо",
+                            "Изучайте теорию вероятностей и статистику",
+                            "Принимайте решения на основе фактических вероятностей",
+                            "Избегайте поиска закономерностей в случайных данных",
+                            "Анализируйте свои решения с математической точки зрения"
+                        ]
+                    },
+                    {
+                        id: 5,
+                        title: "Эффект ореола",
+                        category: "Социальные искажения",
+                        shortDescription: "Первое впечатление или одна черта человека влияет на общее восприятие его личности.",
+                        description: "Это когнитивное искажение заключается в том, что наше общее впечатление о человеке влияет на то, как мы оцениваем его конкретные черты. Например, если человек нам нравится внешне, мы склонны приписывать ему положительные качества, даже не зная его достаточно хорошо.",
+                        example: "Привлекательный кандидат на собеседовании оценивается как более компетентный, чем менее привлекательный, хотя объективные данные говорят об обратном.",
+                        checklist: [
+                            "Мое первое впечатление сильно влияет на последующие оценки?",
+                            "Я приписываю людям положительные качества на основе одной черты?",
+                            "Мне трудно изменить мнение о человеке после первого впечатления?",
+                            "Я сужу о компетентности человека по его внешности?",
+                            "Я склонен игнорировать негативные черты у симпатичных мне людей?"
+                        ],
+                        advice: [
+                            "Осознанно разделяйте разные характеристики человека",
+                            "Оценивайте людей по конкретным действиям и результатам",
+                            "Ищите дополнительную информацию, прежде чем составить мнение",
+                            "Регулярно пересматривайте свои оценки людей",
+                            "Анализируйте, не влияет ли первое впечатление на ваше суждение"
+                        ]
+                    },
+                    {
+                        id: 6,
+                        title: "Предвзятость настоящего",
+                        category: "Эмоциональные искажения",
+                        shortDescription: "Склонность отдавать предпочтение немедленным вознаграждениям в ущерб будущим выгодам.",
+                        description: "Это искажение заставляет нас выбирать меньшее, но немедленное вознаграждение вместо большего, но отсроченного. Мы переоцениваем текущие удовольствия и недооцениваем будущие выгоды, что часто приводит к импульсивным решениям и прокрастинации.",
+                        example: "Человек выбирает посмотреть сериал вместо занятий спортом, хотя знает, что регулярные тренировки принесут большую пользу в долгосрочной перспективе.",
+                        checklist: [
+                            "Я часто откладываю важные дела ради сиюминутных удовольствий?",
+                            "Мне трудно следовать долгосрочным планам?",
+                            "Я недооцениваю будущие последствия текущих решений?",
+                            "Я склонен к импульсивным покупкам?",
+                            "Я часто сожалею, что не начал действовать раньше?"
+                        ],
+                        advice: [
+                            "Разбивайте долгосрочные цели на небольшие шаги",
+                            "Создавайте системы напоминаний о будущих выгодах",
+                            "Практикуйте осознанность и самоконтроль",
+                            "Используйте стратегии «связывания» - совмещайте приятное с полезным",
+                            "Визуализируйте позитивные последствия долгосрочных решений"
+                        ]
+                    }
+                ],
+                
+                // Состояния интерфейса
+                selectedCategory: "Все ловушки",
+                searchQuery: "",
+                selectedTrap: null
+            },
+            mutations: {
+                // Выбор категории
+                selectCategory(state, category) {
+                    state.selectedCategory = category;
+                },
+                
+                // Установка поискового запроса
+                setSearchQuery(state, query) {
+                    state.searchQuery = query;
+                },
+                
+                // Выбор ловушки для детального просмотра
+                selectTrap(state, trap) {
+                    state.selectedTrap = trap;
+                },
+                
+                // Сброс выбранной ловушки
+                clearSelectedTrap(state) {
+                    state.selectedTrap = null;
+                },
+                
+                // Сброс фильтров
+                resetFilters(state) {
+                    state.selectedCategory = "Все ловушки";
+                    state.searchQuery = "";
+                }
+            },
+            getters: {
+                // Фильтрация ловушек по категории и поисковому запросу
+                filteredTraps(state) {
+                    let traps = state.cognitiveTraps;
+                    
+                    // Фильтрация по категории
+                    if (state.selectedCategory !== "Все ловушки") {
+                        traps = traps.filter(trap => trap.category === state.selectedCategory);
+                    }
+                    
+                    // Фильтрация по поисковому запросу
+                    if (state.searchQuery) {
+                        const query = state.searchQuery.toLowerCase();
+                        traps = traps.filter(trap => 
+                            trap.title.toLowerCase().includes(query) ||
+                            trap.shortDescription.toLowerCase().includes(query) ||
+                            trap.description.toLowerCase().includes(query) ||
+                            trap.category.toLowerCase().includes(query)
+                        );
+                    }
+                    
+                    return traps;
+                }
+            }
+        });
+
+        // Создаем экземпляр Vue
+        new Vue({
+            el: '#app',
+            store,
+            computed: {
+                categories() {
+                    return this.$store.state.categories;
+                },
+                selectedCategory() {
+                    return this.$store.state.selectedCategory;
+                },
+                searchQuery: {
+                    get() {
+                        return this.$store.state.searchQuery;
+                    },
+                    set(value) {
+                        this.$store.commit('setSearchQuery', value);
+                    }
+                },
+                filteredTraps() {
+                    return this.$store.getters.filteredTraps;
+                },
+                selectedTrap() {
+                    return this.$store.state.selectedTrap;
+                }
+            },
+            methods: {
+                // Выбор категории
+                selectCategory(category) {
+                    this.$store.commit('selectCategory', category);
+                },
+                
+                // Показать детали ловушки
+                showTrapDetails(trap) {
+                    this.$store.commit('selectTrap', trap);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                },
+                
+                // Показать только чек-лист
+                showChecklist(trap) {
+                    this.$store.commit('selectTrap', trap);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    
+                    // Прокрутка к чек-листу
+                    setTimeout(() => {
+                        const element = document.querySelector('.checklist');
+                        if (element) {
+                            element.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    }, 300);
+                },
+                
+                // Закрыть детали ловушки
+                closeTrapDetails() {
+                    this.$store.commit('clearSelectedTrap');
+                },
+                
+                // Сбросить фильтры
+                resetFilters() {
+                    this.$store.commit('resetFilters');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
